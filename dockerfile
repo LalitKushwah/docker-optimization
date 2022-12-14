@@ -1,4 +1,6 @@
-FROM node:14.17.0
+# STAGE 1
+
+FROM node:14-alpine as builder
 
 WORKDIR /app
 
@@ -8,6 +10,18 @@ RUN yarn install
 
 COPY . .
 
-EXPOSE 3000
+RUN npm run build
 
-CMD yarn start
+# STAGE 2
+
+FROM node:14-alpine
+
+RUN npm install -g serve
+
+WORKDIR /app
+
+COPY --from=builder /app/build .
+
+EXPOSE 80
+
+CMD ["serve", "-p", "80", "-s", "."]
